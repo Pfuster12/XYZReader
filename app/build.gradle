@@ -9,6 +9,8 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        renderscriptTargetApi 26
+        renderscriptSupportModeEnabled true
     }
     buildTypes {
         release {
@@ -32,7 +34,12 @@ dependencies {
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
     // Server
     implementation 'com.squareup.okhttp3:okhttp:3.7.0'
+    // Picture loading
+    implementation 'com.github.bumptech.glide:glide:4.3.1'
 
     // Design library
     implementation 'com.android.support:design:26.1.0'
+
+    // Blur image dependency
+    implementation 'jp.wasabeef:blurry:2.1.1'
 }

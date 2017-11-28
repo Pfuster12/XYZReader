@@ -1,4 +1,9 @@
 <resources>
     <string name="app_name">XYZ Reader</string>
     <string name="action_share">Share</string>
+    <string name="transition_image">article_image</string>
+    <string name="transition_title">article_title</string>
+    <string name="snackbar_text">All articles updated.</string>
+    <string name="action_refresh">Refresh</string>
+
 </resources>

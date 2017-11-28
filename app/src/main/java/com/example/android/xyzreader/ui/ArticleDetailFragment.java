@@ -6,17 +6,14 @@ import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.Color;
-import android.graphics.Rect;
 import android.graphics.Typeface;
-import android.graphics.drawable.ColorDrawable;
-
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.GregorianCalendar;
-
 import android.os.Bundle;
+import android.support.design.widget.AppBarLayout;
+import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v4.app.ShareCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.NestedScrollView;
@@ -28,14 +25,16 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.ImageLoader;
 import com.example.android.xyzreader.R;
 import com.example.android.xyzreader.data.ArticleLoader;
+
+import jp.wasabeef.blurry.Blurry;
 
 /**
  * A fragment representing a single Article detail screen. This fragment is
@@ -47,20 +46,18 @@ public class ArticleDetailFragment extends Fragment implements
     private static final String TAG = "ArticleDetailFragment";
 
     public static final String ARG_ITEM_ID = "item_id";
-    private static final float PARALLAX_FACTOR = 1.25f;
 
     private Cursor mCursor;
     private long mItemId;
     private View mRootView;
-    private ColorDrawable mStatusBarColorDrawable;
+    private ImageButton mBackButton;
+    private ImageView mBlurImage;
+    private NestedScrollView mScrollView;
 
-    private int mTopInset;
-    private View mPhotoContainerView;
     private ImageView mPhotoView;
-    private int mScrollY;
     private boolean mIsCard = false;
-    private int mStatusBarFullOpacityBottom;
     private Toolbar mToolbar;
+    private TextView mToolbarTitle;
 
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.sss");
     // Use default locale format
@@ -90,11 +87,6 @@ public class ArticleDetailFragment extends Fragment implements
         if (getArguments().containsKey(ARG_ITEM_ID)) {
             mItemId = getArguments().getLong(ARG_ITEM_ID);
         }
-        //setHasOptionsMenu(true);
-    }
-
-    public ArticleDetailActivity getActivityCast() {
-        return (ArticleDetailActivity) getActivity();
     }
 
     @Override
@@ -112,12 +104,26 @@ public class ArticleDetailFragment extends Fragment implements
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         mRootView = inflater.inflate(R.layout.fragment_article_detail, container, false);
+        mScrollView = mRootView.findViewById(R.id.scrollview);
 
-        mPhotoView = mRootView.findViewById(R.id.image);
+        if (getResources().getBoolean(R.bool.tablet)) {
+            // We are in sw600 device so grab the background image to be blurred.
+            mBlurImage = mRootView.findViewById(R.id.blur_background);
+        } else {
+            // It's not sw600 so grab the toolbar image
+            mPhotoView = mRootView.findViewById(R.id.image);
+        }
+
+        mBackButton = mRootView.findViewById(R.id.button);
+        mBackButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getActivity().finish();
+            }
+        });
 
         mToolbar = mRootView.findViewById(R.id.toolbar);
-
-        mStatusBarColorDrawable = new ColorDrawable(0);
+        mToolbarTitle = mRootView.findViewById(R.id.toolbar_title);
 
         mRootView.findViewById(R.id.share_fab).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -128,7 +134,6 @@ public class ArticleDetailFragment extends Fragment implements
                         .getIntent(), getString(R.string.action_share)));
             }
         });
-
         bindViews();
         return mRootView;
     }
@@ -154,17 +159,38 @@ public class ArticleDetailFragment extends Fragment implements
         bylineView.setMovementMethod(new LinkMovementMethod());
         TextView bodyView = mRootView.findViewById(R.id.article_body);
 
-
         bodyView.setTypeface(Typeface.createFromAsset(getResources().getAssets(), "Rosario-Regular.ttf"));
 
         if (mCursor != null) {
             mRootView.setAlpha(0);
             mRootView.setVisibility(View.VISIBLE);
             mRootView.animate().alpha(1);
-            String title = mCursor.getString(ArticleLoader.Query.TITLE);
+            final String title = mCursor.getString(ArticleLoader.Query.TITLE);
+            // Bind views.
             titleView.setText(title);
-            mToolbar.setTitle(title);
-            mToolbar.setTitleTextColor(ContextCompat.getColor(getActivity(), android.R.color.background_light));
+
+            // StackOverflow answer. Set the title only when toolbar is collapsed.
+            final CollapsingToolbarLayout collapsingToolbarLayout = mRootView.findViewById(R.id.collapsing_toolbar);
+            AppBarLayout appBarLayout = mRootView.findViewById(R.id.appbar_layout);
+            appBarLayout.addOnOffsetChangedListener(new AppBarLayout.OnOffsetChangedListener() {
+                boolean isShow = false;
+                int scrollRange = -1;
+
+                @Override
+                public void onOffsetChanged(AppBarLayout appBarLayout, int verticalOffset) {
+                    if (scrollRange == -1) {
+                        scrollRange = appBarLayout.getTotalScrollRange();
+                    }
+                    if (scrollRange + verticalOffset == 0) {
+                        collapsingToolbarLayout.setTitle(title);
+                        collapsingToolbarLayout.setCollapsedTitleTextColor(ContextCompat.getColor(getActivity(), R.color.colorWhite));
+                        isShow = true;
+                    } else if(isShow) {
+                        collapsingToolbarLayout.setTitle(" ");//careful there should a space between double quote otherwise it wont work
+                        isShow = false;
+                    }
+                }
+            });
             Date publishedDate = parsePublishedDate();
             if (!publishedDate.before(START_OF_EPOCH.getTime())) {
                 bylineView.setText(Html.fromHtml(
@@ -182,15 +208,24 @@ public class ArticleDetailFragment extends Fragment implements
                         outputFormat.format(publishedDate) + " by <font color='#ffffff'>"
                                 + mCursor.getString(ArticleLoader.Query.AUTHOR)
                                 + "</font>"));
-
             }
-            bodyView.setText(Html.fromHtml(mCursor.getString(ArticleLoader.Query.BODY).replaceAll("(\r\n|\n)", "<br />")));
+            bodyView.setText(Html.fromHtml(mCursor.getString(ArticleLoader.Query.BODY)
+                    .replaceAll("(\r\n|\n)", "<br />")));
+
             ImageLoaderHelper.getInstance(getActivity()).getImageLoader()
                     .get(mCursor.getString(ArticleLoader.Query.PHOTO_URL), new ImageLoader.ImageListener() {
                         @Override
                         public void onResponse(ImageLoader.ImageContainer imageContainer, boolean b) {
                             Bitmap bitmap = imageContainer.getBitmap();
-                            mPhotoView.setImageBitmap(bitmap);
+                            if (bitmap != null) {
+                                if (getResources().getBoolean(R.bool.tablet)){
+                                    // Set the background image using Blurry library
+                                    Blurry.with(getActivity()).from(bitmap).into(mBlurImage);
+                                } else {
+                                    // Set toolbar collapsing image.
+                                    mPhotoView.setImageBitmap(bitmap);
+                                }
+                            }
                         }
 
                         @Override
@@ -234,16 +269,5 @@ public class ArticleDetailFragment extends Fragment implements
     public void onLoaderReset(Loader<Cursor> cursorLoader) {
         mCursor = null;
         bindViews();
-    }
-
-    public int getUpButtonFloor() {
-        if (mPhotoContainerView == null || mPhotoView.getHeight() == 0) {
-            return Integer.MAX_VALUE;
-        }
-
-        // account for parallax
-        return mIsCard
-                ? (int) mPhotoContainerView.getTranslationY() + mPhotoView.getHeight() - mScrollY
-                : mPhotoView.getHeight() - mScrollY;
     }
 }
