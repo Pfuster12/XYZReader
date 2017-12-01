@@ -127,7 +127,6 @@
                     android:layout_marginStart="20dp"
                     android:layout_marginEnd="20dp"
                     android:paddingBottom="16dp"
-                    android:textColorLink="@color/colorAccent"
                     android:textSize="@dimen/detail_body_text_size"
                     android:lineSpacingMultiplier="@fraction/detail_body_line_spacing_multiplier"
                     tools:text="This is the text of the article or book and it is big so people can read." />

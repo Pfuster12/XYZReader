@@ -13,17 +13,16 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:orientation="vertical">
 
         <!--suppress AndroidLintContentDescription -->
-        <ImageView
+        <com.example.android.xyzreader.ui.DynamicHeightNetworkImageView
             android:id="@+id/thumbnail"
             android:layout_width="match_parent"
-            android:layout_height="@dimen/grid_height"
+            android:layout_height="wrap_content"
             android:scaleType="centerCrop"
-            tools:src="@drawable/sleepy_hollow"
-            tools:tint="@color/colorPrimary" />
+            android:background="@color/colorPrimaryLight" />
 
         <TextView
             android:id="@+id/article_title"

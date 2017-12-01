@@ -14,6 +14,7 @@ import java.util.GregorianCalendar;
 import android.os.Bundle;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CollapsingToolbarLayout;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ShareCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.NestedScrollView;
@@ -53,6 +54,7 @@ public class ArticleDetailFragment extends Fragment implements
     private ImageButton mBackButton;
     private ImageView mBlurImage;
     private NestedScrollView mScrollView;
+    private FloatingActionButton mFAB;
 
     private ImageView mPhotoView;
     private boolean mIsCard = false;
@@ -105,6 +107,7 @@ public class ArticleDetailFragment extends Fragment implements
                              Bundle savedInstanceState) {
         mRootView = inflater.inflate(R.layout.fragment_article_detail, container, false);
         mScrollView = mRootView.findViewById(R.id.scrollview);
+        mFAB = mRootView.findViewById(R.id.share_fab);
 
         if (getResources().getBoolean(R.bool.tablet)) {
             // We are in sw600 device so grab the background image to be blurred.
@@ -134,6 +137,7 @@ public class ArticleDetailFragment extends Fragment implements
                         .getIntent(), getString(R.string.action_share)));
             }
         });
+
         bindViews();
         return mRootView;
     }
