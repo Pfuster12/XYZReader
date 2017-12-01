@@ -1,7 +1,5 @@
 package com.example.android.xyzreader.ui;
 
-import android.graphics.drawable.Drawable;
-import android.media.Image;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.view.ViewPager;
 import android.view.View;
