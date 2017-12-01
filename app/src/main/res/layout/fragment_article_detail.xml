@@ -78,6 +78,7 @@
                 android:id="@+id/meta_bar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:minHeight="24dp"
                 android:background="@color/colorPrimary"
                 android:orientation="vertical"
                 android:paddingLeft="16dp"
@@ -110,7 +111,8 @@
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:minHeight="@dimen/app_bar_height">
 
                 <TextView
                     android:id="@+id/article_body"
@@ -121,6 +123,8 @@
                     android:layout_marginRight="16dp"
                     android:paddingBottom="16dp"
                     android:textSize="@dimen/detail_body_text_size"
+                    android:linksClickable="true"
+                    android:autoLink="all"
                     android:lineSpacingMultiplier="@fraction/detail_body_line_spacing_multiplier"
                     tools:text="This is the text of the article or book and it is big so people can read." />
             </LinearLayout>
